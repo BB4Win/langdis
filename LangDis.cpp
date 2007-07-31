@@ -1,5 +1,9 @@
 #include <BBApi.h>
 
+#ifndef BB_DREDRAW
+#define BB_REDRAW 10610
+#endif
+
 LPCSTR szClassName = "LangDisClass";
 LPCSTR szWindowName = "LangDisWindow";
 const int nMessages[] = { BB_RECONFIGURE, BB_BROADCAST, BB_ADDTASK, BB_REMOVETASK, BB_ACTIVATESHELLWINDOW, BB_ACTIVETASK, BB_MINMAXTASK, BB_REDRAW };
@@ -168,7 +172,7 @@ private:
 		SelectObject(test, old);
 		DeleteDC(test);
 
-		SetWindowPos(m_hWnd, NULL, NULL, NULL, size.cx + siStyle->borderWidth + siStyle->marginWidth, size.cy + siStyle->borderWidth + siStyle->marginWidth, SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+		SetWindowPos(m_hWnd, 0, 0, 0, size.cx + siStyle->borderWidth + siStyle->marginWidth, size.cy + siStyle->borderWidth + siStyle->marginWidth, SWP_NOMOVE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 		if (m_hParent)
 			SendMessage(m_hParent, SLIT_UPDATE, NULL, NULL);
 	}
@@ -176,7 +180,11 @@ private:
 	void GetStyleSettings()
 	{
 		char styleFile[MAX_PATH];
+#ifdef _MSC_VER
 		strcpy_s(styleFile, MAX_PATH, stylePath());
+#else
+		strncpy(styleFile, stylePath(), MAX_PATH);
+#endif
 
 		siStyle = (StyleItem*)GetSettingPtr(m_hParent ? SN_TOOLBARWINDOWLABEL : SN_TOOLBAR);
 		if (siStyle->parentRelative)
@@ -217,7 +225,8 @@ private:
 
 	BOOL _RegisterClass()
 	{
-		WNDCLASSEX wcl = {NULL};
+		WNDCLASSEX wcl;
+		ZeroMemory(&wcl, sizeof(wcl));
 		wcl.cbSize = sizeof(WNDCLASSEX);
 		wcl.hInstance = m_hInstance;
 		wcl.lpfnWndProc = (WNDPROC)WndProc;
@@ -263,7 +272,7 @@ extern "C" {
 	{
 		delete LangDisPlugin;
 	}
-	DLL_EXPORT LPSTR pluginInfo(int field)
+	DLL_EXPORT const char* pluginInfo(int field)
 	{
 		return LangDisPlugin->PluginInfo(field);
 	}
