@@ -1,7 +1,7 @@
 #include <BBApi.h>
 
 #ifndef BB_DREDRAW
-#define BB_REDRAW 10610
+#	define BB_REDRAW 10610
 #endif
 
 LPCSTR szClassName = "LangDisClass";
@@ -40,6 +40,9 @@ public:
 		if (m_hParent)
 			SendMessage(m_hParent, SLIT_REMOVE, NULL, (LPARAM)m_hWnd);
 
+		if (m_szLanguage)
+			delete[] m_szLanguage;
+
 		SendMessage(GetBBWnd(), BB_UNREGISTERMESSAGE, (WPARAM)m_hWnd, (LPARAM)nMessages);
 		DestroyWindow(m_hWnd);
 		UnregisterClass(szClassName, m_hInstance);
@@ -63,10 +66,10 @@ public:
 		if (m_hParent)
 			SendMessage(m_hParent, SLIT_ADD, NULL, (LPARAM)m_hWnd);
 
-		return TRUE;
+		return FALSE;
 	}
 
-	LPSTR PluginInfo(int field)
+	static LPSTR PluginInfo(int field)
 	{
 		switch (field)
 		{
@@ -180,11 +183,7 @@ private:
 	void GetStyleSettings()
 	{
 		char styleFile[MAX_PATH];
-#ifdef _MSC_VER
-		strcpy_s(styleFile, MAX_PATH, stylePath());
-#else
 		strncpy(styleFile, stylePath(), MAX_PATH);
-#endif
 
 		siStyle = (StyleItem*)GetSettingPtr(m_hParent ? SN_TOOLBARWINDOWLABEL : SN_TOOLBAR);
 		if (siStyle->parentRelative)
@@ -259,7 +258,7 @@ private:
 
 };
 
-LangDis *LangDisPlugin;
+LangDis *LangDisPlugin = NULL;
 
 extern "C" {
 	DLL_EXPORT int beginPluginEx(HINSTANCE hInstance, HWND hSlit)
@@ -270,11 +269,12 @@ extern "C" {
 
 	DLL_EXPORT void endPlugin(HINSTANCE hInstance)
 	{
-		delete LangDisPlugin;
+		if (LangDisPlugin)
+			delete LangDisPlugin;
 	}
 	DLL_EXPORT const char* pluginInfo(int field)
 	{
-		return LangDisPlugin->PluginInfo(field);
+		return LangDis::PluginInfo(field);
 	}
 
 };
