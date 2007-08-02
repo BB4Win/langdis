@@ -74,15 +74,15 @@ public:
 		switch (field)
 		{
 			case PLUGIN_NAME: return "Language\\Locale Display";
-			case PLUGIN_VERSION: return "1.2";
+			case PLUGIN_VERSION: return "1.4";
 			case PLUGIN_AUTHOR: return "Brian \"Tres`ni\" Hartvigsen";
-			case PLUGIN_RELEASEDATE: return "31 July 2007";
+			case PLUGIN_RELEASEDATE: return "01 Aug 2007";
 			case PLUGIN_EMAIL: return "tresni@crackmonkey.us";
 			case PLUGIN_BROAMS: return "\003@langdis next@langdis prev\0@langdis next\0@langdis prev\0\0";
 			case PLUGIN_LINK:
 			case PLUGIN_UPDATE_URL:
 			default:
-				return "Language\\Locale Display v1.0 (29 July 2007)";
+				return "Language\\Locale Display v1.4 (01 Aug 2007)";
 		}
 	}
 
@@ -188,7 +188,11 @@ private:
 		siStyle = (StyleItem*)GetSettingPtr(m_hParent ? SN_TOOLBARWINDOWLABEL : SN_TOOLBAR);
 		if (siStyle->parentRelative)
 			siStyle = (StyleItem*)GetSettingPtr(SN_TOOLBAR);
-		m_hFont = CreateStyleFont(siStyle);
+
+		if (siStyle->Font[0] == 0)
+			m_hFont = CreateStyleFont((StyleItem*)GetSettingPtr(SN_TOOLBAR));
+		else
+			m_hFont = CreateStyleFont(siStyle);
 	}
 
 	void OnPaint()
