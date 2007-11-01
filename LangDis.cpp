@@ -22,6 +22,7 @@ private:
 
 	int nBorderWidth;
 	int nBevelWidth;
+	int m_nDelay;
 
 	StyleItem *siStyle;
 
@@ -58,7 +59,7 @@ public:
 
 		SendMessage(GetBBWnd(), BB_REGISTERMESSAGE, (WPARAM)m_hWnd, (LPARAM)nMessages);
 		
-		GetStyleSettings();
+		GetSettings();
 		GetInfo();
 
 		InvalidateRect(m_hWnd, NULL, TRUE);
@@ -74,15 +75,15 @@ public:
 		switch (field)
 		{
 			case PLUGIN_NAME: return "Language\\Locale Display";
-			case PLUGIN_VERSION: return "1.4";
+			case PLUGIN_VERSION: return "1.4.2";
 			case PLUGIN_AUTHOR: return "Brian \"Tres`ni\" Hartvigsen";
-			case PLUGIN_RELEASEDATE: return "01 Aug 2007";
+			case PLUGIN_RELEASEDATE: return "20 Sep 2007";
 			case PLUGIN_EMAIL: return "tresni@crackmonkey.us";
 			case PLUGIN_BROAMS: return "\003@langdis next@langdis prev\0@langdis next\0@langdis prev\0\0";
 			case PLUGIN_LINK:
 			case PLUGIN_UPDATE_URL:
 			default:
-				return "Language\\Locale Display v1.4 (01 Aug 2007)";
+				return "Language\\Locale Display v1.4.2 (20 Sep 2007)";
 		}
 	}
 
@@ -107,7 +108,7 @@ private:
 		{
 
 			case BB_RECONFIGURE:
-				GetStyleSettings();
+				GetSettings();
 
 			case BB_ADDTASK:
 			case BB_REMOVETASK:
@@ -125,6 +126,12 @@ private:
 
 			case WM_CLOSE:
 				break;
+
+			case WM_TIMER:
+				PostMessage(hWnd, BB_REDRAW, 0, 0);
+				KillTimer(hWnd, 1);
+				break;
+
 			case BB_BROADCAST:
 				if (_strnicmp((char*)lParam, "@langdis", 8) == 0)
 				{
@@ -140,7 +147,8 @@ private:
 						if (forWnd)
 							PostMessage(forWnd, WM_INPUTLANGCHANGEREQUEST, 0, (LPARAM)hklMsg);
 
-						PostMessage(hWnd, BB_REDRAW, 0, 0);
+						SetTimer(hWnd, 1, m_nDelay, NULL);
+						//PostMessage(hWnd, BB_REDRAW, 0, 0);
 					}
 				}
 				break;
@@ -180,7 +188,7 @@ private:
 			SendMessage(m_hParent, SLIT_UPDATE, NULL, NULL);
 	}
 
-	void GetStyleSettings()
+	void GetSettings()
 	{
 		char styleFile[MAX_PATH];
 		strncpy(styleFile, stylePath(), MAX_PATH);
@@ -193,6 +201,8 @@ private:
 			m_hFont = CreateStyleFont((StyleItem*)GetSettingPtr(SN_TOOLBAR));
 		else
 			m_hFont = CreateStyleFont(siStyle);
+
+		m_nDelay = ReadInt(extensionsrcPath(), "langdis.delay:", USER_TIMER_MINIMUM);
 	}
 
 	void OnPaint()
